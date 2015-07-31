@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "description": "simple example program to blink an LED on an mbed board with mbed OS",
   "keywords": [
-    "\u001b[D\u001b[Dblinky",
-    "mbedOS>"
+    "blinky",
+    "mbed OS", 
+    "getting started"
   ],
   "author": "mbedAustin",
   "homepage": "http://github.com/ARMmbed/example-mbedos-blinky",
