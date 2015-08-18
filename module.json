@@ -16,8 +16,8 @@
     }
   ],
   "dependencies": {
-    "mbed-core": "~0.4.0",
-    "uvisor-lib": "~0.7.5"
+    "mbed-drivers": "~0.6.4",
+    "uvisor-lib": "~0.7.14"
   },
   "targetDependencies": {},
   "bin": "./source"

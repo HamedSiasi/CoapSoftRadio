@@ -72,9 +72,9 @@ frdm-k64f-gcc,*
 ```
 
 #### Step 3: Add Dependencies!
-Now that we have created an executable file lets add the dependencies, in this case we are going to have `mbed-core` (aka mbed OS) as our dependency.
+Now that we have created an executable file lets add the dependencies, in this case we are going to have `mbed-drivers` (aka mbed OS) as our dependency.
 ```bash
-$ yotta install mbed-core
+$ yotta install mbed-drivers
 info: ... A bunch of messages about stuff being downloaded ...
 ```
 You could at this point add other yotta modules, check out the `yotta search` function to search for other available modules.
