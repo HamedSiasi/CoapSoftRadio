@@ -19,7 +19,7 @@
 
 
 static void blinky(void) {
-    DigitalOut led(LED1);
+    static DigitalOut led(LED1);
 
     led = !led;
     printf("LED = %d \n\r",led.read());
