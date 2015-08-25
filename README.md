@@ -80,22 +80,23 @@ info: ... A bunch of messages about stuff being downloaded ...
 You could at this point add other yotta modules, check out the `yotta search` function to search for other available modules.
 
 #### Step 4: Add Source Files
-Now that we have set up an executable module, and downloaded our dependencies, lets add some source code to use the module. In the `./source` folder create a file called `blinky.c` with the following contents.
+Now that we have set up an executable module, and downloaded our dependencies, lets add some source code to use the module. In the `./source` folder create a file called `blinky.cpp` with the following contents.
 ```C
 #include "mbed/mbed.h"
 
-DigitalOut led(LED1);
+static void blinky(void) {
+    static DigitalOut led(LED1);
+
+    led = !led;
+    printf("LED = %d \n\r",led.read());
+}
 
 void app_start(int, char**){
-    while(1){
-        led = !led;
-        printf("LED = %d \n\r",led.read());
-        wait(0.5f);
-    }
+    minar::Scheduler::postCallback(blinky).period(minar::milliseconds(500));
 }
 ```
 This program will cause the LED on the board to flash and print out the status of the LED to the terminal. Default terminal speed is `9600baud` at `8-N-1`.
-
+For more information about MINAR and the structure of mbed OS programs, please refer to the [MINAR documentation](https://github.com/ARMmbed/minar).
 
 #### Step 5: Build
 Run the yotta build command in the top level of the example directory (where the module.json file is located) to build the project.
@@ -163,7 +164,4 @@ LED = 1
 LED = 0 
 ...
 ```
-
-
-
 
