@@ -1,6 +1,6 @@
 # example-mbedos-blinky
 
-simple example program to blink an LED on an mbed board with mbed OS
+Simple example program to blink an LED on an mbed-enabled board with mbed OS.
 
 # Your first application
 
