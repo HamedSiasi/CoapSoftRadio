@@ -4,7 +4,7 @@
   "description": "simple example program to blink an LED on an mbed board with mbed OS",
   "keywords": [
     "blinky",
-    "mbed OS", 
+    "mbed OS",
     "getting started"
   ],
   "author": "mbedAustin",
@@ -16,8 +16,7 @@
     }
   ],
   "dependencies": {
-    "mbed-drivers": "~0.6.4",
-    "uvisor-lib": "~0.7.14"
+    "mbed-drivers": "*"
   },
   "targetDependencies": {},
   "bin": "./source"
