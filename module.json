@@ -5,7 +5,9 @@
   "keywords": [
     "blinky",
     "mbed OS",
-    "getting started"
+    "getting started",
+    "mbed",
+    "mbed-official"
   ],
   "author": "mbedAustin",
   "homepage": "http://github.com/ARMmbed/example-mbedos-blinky",
