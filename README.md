@@ -48,11 +48,11 @@ Earlier, we explained that yotta can build the same code for multiple targets; i
 For a full list of available targets run the following `search` command:
 ```
 $ yotta search --limit 1000 target
-frdm-k64f-gcc 0.0.21: Official mbed build target 
+frdm-k64f-gcc 0.0.21: Official mbed build target
 for the mbed frdm-k64f development board.
-st-nucleo-f401re-gcc 0.1.0: Official mbed build target 
+st-nucleo-f401re-gcc 0.1.0: Official mbed build target
 for the mbed st-nucleo-f401re development board.
-frdm-k64f-armcc 0.0.13: Official mbed build target 
+frdm-k64f-armcc 0.0.13: Official mbed build target
 for the mbed frdm-k64f development board, using the armcc toolchain.
 ...
 ```
@@ -92,17 +92,20 @@ static void blinky(void) {
 }
 
 void app_start(int, char**) {
+    // set 115200 baud rate for stdout
+    static Serial pc(USBTX, USBRX);
+    pc.baud(115200);
     minar::Scheduler::postCallback(blinky).period(minar::milliseconds(500));
 }
 ```
-This program will cause LED1 on the board to flash and print the status of LED1 to the terminal. The default terminal speed is 9600 baud at 8-N-1.
+This program will cause LED1 on the board to flash and print the status of LED1 to the terminal. The default terminal speed is 115200 baud at 8-N-1.
 
 ## Step 6: build
 
 To build the application, run the `yotta build` command in the top level directory:
 ```
 $ yt build
-info: generate for target: frdm-k64f-gcc 0.0.21 
+info: generate for target: frdm-k64f-gcc 0.0.21
 at ~\blinky\yotta_targets\frdm-k64f-gcc
 GCC version is: 4.9.3
 -- The ASM compiler identification is GNU
@@ -195,8 +198,8 @@ and "show warranty" for details.
 This GDB was configured as "--host=x86_64-apple-darwin10 --target=arm-none-eabi".
 For bug reporting instructions, please see:
 <http://www.gnu.org/software/gdb/bugs/>...
-Reading symbols 
-from 
+Reading symbols
+from
 /examples/example-mbedos-blinky/build/frdm-k64f-gcc/source/example-mbedos-blinky
 ...done.
 info: One client connected!

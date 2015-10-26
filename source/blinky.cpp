@@ -26,6 +26,9 @@ static void blinky(void) {
 }
 
 void app_start(int, char**){
+    // set 115200 baud rate for stdout
+    static Serial pc(USBTX, USBRX);
+    pc.baud(115200);
     minar::Scheduler::postCallback(blinky).period(minar::milliseconds(500));
 }
 
