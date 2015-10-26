@@ -92,10 +92,13 @@ static void blinky(void) {
 }
 
 void app_start(int, char**) {
+    // set 115200 baud rate for stdout
+    static Serial pc(USBTX, USBRX);
+    pc.baud(115200);
     minar::Scheduler::postCallback(blinky).period(minar::milliseconds(500));
 }
 ```
-This program will cause LED1 on the board to flash and print the status of LED1 to the terminal. The default terminal speed is 9600 baud at 8-N-1.
+This program will cause LED1 on the board to flash and print the status of LED1 to the terminal. The terminal speed is 115200 baud at 8-N-1.
 
 ## Step 6: build
 
