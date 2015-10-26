@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "mbed/mbed.h"
+#include "mbed-drivers/mbed.h"
 
 
 static void blinky(void) {
