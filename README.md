@@ -30,7 +30,7 @@ To build Blinky with yotta as a command-line tool:
 
 	```
 	$ git clone https://github.com/ARMmbed/example-mbedos-blinky.git
-		$ cd example-mbedos-blinky
+	$ cd example-mbedos-blinky
 	```
 
 2. Select a target platform:
