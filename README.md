@@ -1,209 +1,66 @@
 # example-mbedos-blinky
 
-Simple example program to blink an LED on an mbed-enabled board with mbed OS.
+Blinky is a simple example program that blinks an LED on an mbed-enabled board with mbed OS.
 
-# Your first application
+## What Blinky does
 
-Ok, let's get to the nitty gritty and create your first mbed application (using yotta). We're going to make the LED on our board blink, and print some commands to the terminal using mbed OS.
+This is a short review of the Blinky code. More information is available on the user guide, where we explain [how to write mbed OS applications](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/Full_Guide/app_on_mbed_os/) and how to [work with yotta](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/Full_Guide/app_on_yotta/).
 
-## Step 1: install yotta and its dependencies
+1. The code begins with ``include``. The included header is ``mbed.h``, from the ``mbed-drivers`` library. It is a key library for mbed OS, and includes most of the functionality standard applications need. yotta, our build system, includes ``mbed-drivers`` during compilation because that library is listed as a dependency in Blinky's ``module.json`` file. `
 
-Please see [yottadocs.mbed.com](http://yottadocs.mbed.com) for installation instructions.
+1. mbed OS applications start with ``app_start``, replacing ``main``.
 
-## Step 2: create an application
+1. MINAR is the mbed OS scheduler; we use it here to create a callback that will run every 500 milliseconds. The function we're running is ``blinky``.
 
-First create an empty folder, then move into that folder:
-```
-$ mkdir blinky
-$ cd blinky
-```
-Next initialize the module with `yotta init` and fill in the details. Make sure you select **executable** as the module type at the end.
-```
-$ yotta init
-Enter the module name: <blinky>
-Enter the initial version: <0.0.0>
-Short description: Having fun and blinking LEDs
-Keywords:  <blinky>
-Author: username
-Repository url:
-Homepage:
-What is the license for this project (Apache-2.0, ISC, MIT etc.)?  <Apache-2.0>
-Is this module an executable? <no> yes
-```
+1. ``blinky`` creates a DigitalOut using the LED1 on our board. It then turns the LED on and off and prints its status to the terminal using ``printf``.
 
-You should now have several folders and files in the directory:
 
-```
-$ ls
-blinky  module.json  source  test
-```
-The `module.json` file contains all the settings for your application; everything you just entered can be found in that file, so if you want to add a repository URL later you can. The `/source` directory contains all the source files. The `/test` directory contains all tests you'll write to [test your module](https://github.com/ARMmbed/GettingStartedmbedOS/blob/master/Docs/docs.yottabuild.org/tutorial/testing.html). The `/blinky` directory is where header files for your application should be created.
+**Tip:** To learn more about writing applications for mbed OS, see the [mbed OS user guide's review of Blinky](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/Full_Guide/app_on_mbed_os/).
 
-Tip: if you want to learn about other module types, [start here](http://docs.yottabuild.org/).
 
-## Step 3: select a target board
+## Building the example
 
-Earlier, we explained that yotta can build the same code for multiple targets; it therefore needs to be told which target every build is for. So now that we have created a basic application, let's set the target.
+### If you're using yotta as a command-line tool
 
-For a full list of available targets run the following `search` command:
-```
-$ yotta search --limit 1000 target
-frdm-k64f-gcc 0.0.21: Official mbed build target 
-for the mbed frdm-k64f development board.
-st-nucleo-f401re-gcc 0.1.0: Official mbed build target 
-for the mbed st-nucleo-f401re development board.
-frdm-k64f-armcc 0.0.13: Official mbed build target 
-for the mbed frdm-k64f development board, using the armcc toolchain.
-...
-```
-In this example we are going to use the Freescale FRDM-K64F board configured for building with gcc, so we'll use the `target frdm-k64f-gcc`.
-```
-$ yotta target frdm-k64f-gcc
-```
-To check that the target has been set correctly run the target command to see what yotta is currently targeting for its builds:
-```
-$ yotta target
-frdm-k64f-gcc,*
-```
-*The information for this target has been downloaded to a directory named `/yotta_targets`. Do not edit or modify files here because they can be modified without your knowledge.*
+**Tip:** If you need help setting up yotta or building a project, see our [quick guide](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/FirstProjectmbedOS/), which uses the same example.
 
-## Step 4: add dependencies
+To build Blinky with yotta as a command-line tool:
 
-Now let's add the dependencies. In this application, we'll have `mbed-drivers` as our dependency:
-```
-$ yotta install mbed-drivers
-info: ... a bunch of messages about stuff being downloaded ...
-```
-You could at this point add other yotta modules. Check out the `yotta search` command to search for other available modules.
-The modules are downloaded and installed in a directory named `/yotta_modules`. Do not edit or modify files here as they can be modified without your knowing.
+1. Clone the repository from GitHub:
 
-If you want to learn more about mbed OS and try some other functionality, you can [start here](http://mbed.com/en/development/software/mbed-os/).
+	```
+	$ git clone https://github.com/ARMmbed/example-mbedos-blinky.git
+		$ cd example-mbedos-blinky
+	```
 
-## Step 5: add source files
+2. Select a target platform:
 
-Now that we have set up an aplication and downloaded our dependencies, let's add some source code to use the module. In the `/source` folder create a file called `app.cpp` with the following contents:
-```
-#include "mbed/mbed.h"
+	```
+	$ yotta target frdm-k64f-gcc
+	```
 
-static void blinky(void) {
-    static DigitalOut led(LED1);
-    led = !led;
-    printf("LED = %d \r\n",led.read());
-}
+3. Build it:
 
-void app_start(int, char**) {
-    // set 115200 baud rate for stdout
-    static Serial pc(USBTX, USBRX);
-    pc.baud(115200);
-    minar::Scheduler::postCallback(blinky).period(minar::milliseconds(500));
-}
-```
-This program will cause LED1 on the board to flash and print the status of LED1 to the terminal. The terminal speed is 115200 baud at 8-N-1.
+	```
+	$ yotta build
+	... bunch of build messages ...
+	[135/135] Linking CXX executable source/example-mbedos-blinky
+	```
 
-## Step 6: build
+yotta will put the compiled binary in the project's `/build` folder. Copy the binary  `/build/frdm-k64f-gcc/source/example-mbedos-blinky.bin` to your mbed board over USB.
 
-To build the application, run the `yotta build` command in the top level directory:
-```
-$ yt build
-info: generate for target: frdm-k64f-gcc 0.0.21 
-at ~\blinky\yotta_targets\frdm-k64f-gcc
-GCC version is: 4.9.3
--- The ASM compiler identification is GNU
--- Found assembler: GNU Tools ARM Embedded/4.9 2014q4/bin/arm-none-eabi-gcc.exe
--- Configuring done
--- Generating done
--- Build files have been written to: ~/blinky/build/frdm-k64f-gcc
-[135/135] Linking CXX executable source/blinky
-```
-The compiled binary will be located in the `/build` folder. Copy the binary from `/build/frdm-k64f-gcc/source/blinky.bin` to your mbed board and see the LED blink. If you hook up a terminal to the board, you can see the output being printed from the board. It should look like this:.
-```
-LED = 1
-LED = 0
-LED = 1
-LED = 0
-...
-```
+### If you're on the online IDE
 
-# Alternative method - cloning an existing application
+**Tip:** If you need help getting started with the IDE, see our [quick guide](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/FirstProjectmbedOS/), which uses the same example.
 
-Instead of setting up your own application from scratch, you could clone an existing one and modify it. We have published the above [blinky example application](https://github.com/ARMmbed/GettingStartedmbedOS/blob/master/Docs/www.github.com/armmbed/example-mbedos-blinky) on GitHub so you can clone to repo and build it.
+To build Blinky in your IDE workspace:
 
-## Step 1: clone the repo
+1. The IDE needs to know which target to build for. Click *Target*:
+ 
+ 1. The list displays your recently used targets. If the target you need is listed, click it.
+ 
+ 1. If your target isn't in the drop-down list, click *Search in Registry*. A list of targets opens. Select your target and click *Set*.
 
-Clone the repository from GitHub:
-```
-$ git clone https://github.com/ARMmbed/example-mbedos-blinky.git
-$ cd example-mbedos-blinky
-```
+1. Click *Build Project*.
 
-## Step 2: select a target platform
-
-```
-$ yotta target frdm-k64f-gcc
-```
-
-## Step 3: build it
-
-```
-$ yotta build
-... bunch of build messages ...
-[135/135] Linking CXX executable source/example-mbedos-blinky
-```
-The compiled binary will be located in the `/build` folder. Copy the binary from `/build/frdm-k64f-gcc/source/example-mbedos-blinky.bin` to your mbed board and see the LED blink. If you hook up a terminal to the board, you can see the output being printed form the board. It should look like this:
-```
-LED = 1
-LED = 0
-LED = 1
-LED = 0
-...
-```
-
-# Debugging in mbed OS
-
-The above `example-mbedos-blinky` applications is simple and easy to understand, so chances are it'll work as expected right away. More complex applications might not work as expected. In that case, a debugger is a very useful tool. There are two main ways to debug mbed OS applications at the moment, depending on how they were compiled.
-
-## Debugging applications compiled with ARMCC
-
-To debug applications compiled with ARMCC, you'll need to install [Keil MDK](https://www.keil.com/download/product/). To debug the application, you can use the `yotta debug` command. If the above `example-mbedos-blinky` application was compiled with target `frdm-k64f-armcc` instead of `frdm-k64f-gcc`, you could debug it by running `yotta debug example-mbedos-blinky`. This will automatically open the uVision IDE, with your program ready for debugging.
-
-## Debugging applications compiled with GCC
-
-The best way to debug applications compiled with GCC is to use the `gdb` debugger. You'll need:
-
-- `arm-none-eabi-gdb`, which is installed as part of the [GCC ARM Embedded](https://launchpad.net/gcc-arm-embedded) installation procedure.
-- `pyocd-gdbserver`, which is installed as part of the yotta installation procedure.
-
-To debug the above `example-mbedos-blinky` application:
-```
-$ yt debug example-mbedos-blinky
-info: found example-mbedos-blinky at source/example-mbedos-blinky
-info: starting PyOCD gdbserver...
-info: new board id detected: 02400201C37A4E793E84B3C1
-info: board allows 5 concurrent packets
-info: DAP SWD MODE initialised
-info: IDCODE: 0x2BA01477
-info: K64F not in secure state
-info: 6 hardware breakpoints, 4 literal comparators
-info: CPU core is Cortex-M4
-info: FPU present
-info: 4 hardware watchpoints
-info: Telnet: server started on port 4444
-info: GDB server started at port:3333
-GNU gdb (GNU Tools for ARM Embedded Processors) 7.6.0.20140731-cvs
-Copyright (C) 2013 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "--host=x86_64-apple-darwin10 --target=arm-none-eabi".
-For bug reporting instructions, please see:
-<http://www.gnu.org/software/gdb/bugs/>...
-Reading symbols 
-from 
-/examples/example-mbedos-blinky/build/frdm-k64f-gcc/source/example-mbedos-blinky
-...done.
-info: One client connected!
-(gdb)
-```
-______
-Copyright © 2015 ARM Ltd. All rights reserved.
+The IDE will build the project as a binary file and ask you to download it. When the download finishes, copy the file to your mbed board over USB.
