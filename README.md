@@ -6,7 +6,7 @@ Blinky is a simple example program that blinks an LED on an mbed-enabled board w
 
 This is a short review of the Blinky code. More information is available on the user guide, where we explain [how to write mbed OS applications](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/Full_Guide/app_on_mbed_os/) and how to [work with yotta](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/Full_Guide/app_on_yotta/).
 
-1. The code begins with ``include``. The included header is ``mbed.h``, from the ``mbed-drivers`` library. It is a key library for mbed OS, and includes most of the functionality standard applications need. yotta, our build system, includes ``mbed-drivers`` during compilation because that library is listed as a dependency in Blinky's ``module.json`` file. `
+1. The code begins with ``include``. The included header is ``mbed.h``, from the ``mbed-drivers`` library. It is a key library for mbed OS, and includes most of the functionality standard applications need. yotta, our build system, includes ``mbed-drivers`` during compilation because that library is listed as a dependency in Blinky's ``module.json`` file.
 
 1. mbed OS applications start with ``app_start``, replacing ``main``.
 
