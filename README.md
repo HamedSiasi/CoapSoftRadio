@@ -12,7 +12,7 @@ This is a short review of the Blinky code. More information is available on the 
 
 1. MINAR is the mbed OS scheduler; we use it here to create a callback that will run every 500 milliseconds. The function we're running is ``blinky``.
 
-1. ``blinky`` creates a DigitalOut using the LED1 on our board. It then turns the LED on and off and prints its status to the terminal using ``printf``.
+1. ``blinky`` creates a DigitalOut using the LED1 on our board. It then turns the LED on and off and prints its status to the terminal using ``printf`` over the serial port (115200 baud, 8 data bits, no parity bit, 1 stop bit (8N1)).
 
 
 **Tip:** To learn more about writing applications for mbed OS, see the [mbed OS user guide's review of Blinky](https://docs.mbed.com/docs/getting-started-mbed-os/en/latest/Full_Guide/app_on_mbed_os/).
