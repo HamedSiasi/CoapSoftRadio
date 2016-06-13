@@ -29,12 +29,12 @@
 // ----------------------------------------------------------------
 
 
-// Send a string, printf()-wise, to the NB-IoT module
+
+// variadicFunction
 bool Nbiot::sendPrintf(const char * pFormat, ...)
 {
-	printf ("[modem->sendPrintf]\r\n");
+	bool success = false;
     va_list args;
-    bool success = false;
     uint32_t len = 0;
 
     if (gInitialised)
@@ -42,14 +42,13 @@ bool Nbiot::sendPrintf(const char * pFormat, ...)
         va_start(args, pFormat);
         len = vsnprintf(gTxBuf, sizeof(gTxBuf), pFormat, args);
         va_end(args);
-
-        printf("[modem->sendPrintf] Sending to module %s \r\n", gTxBuf);
         success = gpSerialPort->transmitBuffer((const char *) gTxBuf, len);
     }
-
-    printf("[modem->sendPrintf] success: %s \r\n", (success ? "True" : "False") );
+    //printf("[modem->sendPrintf] success: %s \r\n", (success ? "True" : "False") );
     return success;
 }
+
+
 
 
 // Get characters (up to lenBuf of them) from the NB-IoT module into pBuf.
@@ -58,7 +57,7 @@ bool Nbiot::sendPrintf(const char * pFormat, ...)
 // otherwise return 0.
 uint32_t Nbiot::getLine(char * pBuf, uint32_t lenBuf)
 {
-	printf ("[modem->getLine]\r\n");
+	//printf ("[modem->getLine]\r\n");
     int32_t x;
     uint32_t returnLen = 0;
 
@@ -66,7 +65,7 @@ uint32_t Nbiot::getLine(char * pBuf, uint32_t lenBuf)
     {
         if (gLenRx < lenBuf)
         {
-        	printf ("[modem->getLine] waiting ... \r\n");
+        	printf ("[modem->getLine]  waiting ... \r\n");
             do
             {
                 x = gpSerialPort->receiveChar();
@@ -103,15 +102,18 @@ uint32_t Nbiot::getLine(char * pBuf, uint32_t lenBuf)
 }
 
 
+
+
+
 // Callback to handle AT stuff received from the NBIoT module
 void Nbiot::rxTick()
 {
-	printf ("[modem->rxTick]\r\n");
+	//printf ("[modem->rxTick]\r\n");
     uint32_t len = getLine (gRxBuf, sizeof (gRxBuf));
 
     if (len > sizeof(AT_TERMINATOR) - 1) // -1 to omit NULL terminator
     {
-        printf ("[modem->rxTick] RxTick received %d characters from module: \"%.*s\".\r\n", (int) (len - (sizeof(AT_TERMINATOR) - 1)), (int) (len - (sizeof(AT_TERMINATOR) - 1)), gRxBuf);
+        printf ("[modem->rxTick]  RxTick received %d characters from module: \"%.*s\".\r\n", (int) (len - (sizeof(AT_TERMINATOR) - 1)), (int) (len - (sizeof(AT_TERMINATOR) - 1)), gRxBuf);
         if (gpResponse == NULL)
         {
            gLenResponse = len;
@@ -132,7 +134,7 @@ Nbiot::AtResponse Nbiot::waitResponse(
 		uint32_t     responseBufLen   /*0*/)
 {
 
-	printf ("[modem->waitResponse]\r\n");
+	//printf ("[modem->waitResponse]\r\n");
     //AtResponse response = AT_RESPONSE_NONE;
 	AtResponse response = AT_RESPONSE_OK;
 
@@ -141,7 +143,7 @@ Nbiot::AtResponse Nbiot::waitResponse(
 
     if (gpResponse != NULL)
     {
-        printf ("[modem->waitResponse] ERROR: response from module not cleared from last time.\r\n");
+        printf ("[modem->waitResponse]  ERROR: response from module not cleared from last time.\r\n");
         gpResponse = NULL;
     }
     do {
@@ -175,8 +177,8 @@ Nbiot::AtResponse Nbiot::waitResponse(
             {
                 if (pExpected != NULL)
                 {
-                    printf ("[modem->waitResponse] WARNING: unexpected response from module.\n");
-                    printf ("[modem->waitResponse] Expected: %s... Received: %.*s \r\n", pExpected, (int) gLenResponse, gpResponse);
+                    printf ("[modem->waitResponse]  WARNING: unexpected response from module.\n");
+                    printf ("[modem->waitResponse]  Expected: %s... Received: %.*s \r\n", pExpected, (int) gLenResponse, gpResponse);
                 }
                 // Reset response pointer
                 gpResponse = NULL;
@@ -195,9 +197,11 @@ Nbiot::AtResponse Nbiot::waitResponse(
 
 
 
+
+
 void Nbiot::charToTchar(const char *pIn, char *pOut, uint32_t size)
 {
-	printf ("[modem->charToTchar]\r\n");
+	//printf ("[modem->charToTchar]\r\n");
     memset (pOut, 0, size);
 #ifdef _MSC_VER
     uint32_t size_needed = MultiByteToWideChar(CP_UTF8, 0, pIn, (int)strlen(pIn), NULL, 0);
@@ -211,9 +215,13 @@ void Nbiot::charToTchar(const char *pIn, char *pOut, uint32_t size)
 #endif
 }
 
+
+
 // ----------------------------------------------------------------
 // PUBLIC FUNCTIONS
 // ----------------------------------------------------------------
+
+
 
 // Constructor
 Nbiot::Nbiot(const char * pPortname)
@@ -231,7 +239,7 @@ Nbiot::Nbiot(const char * pPortname)
     {
         if (gpSerialPort->connect(pPortname))
         {
-            printf ("[modem->Constructor] connected to %s.\r\n", pPortname);
+            printf ("[modem->Constructor]  connected to %s.\r\n", pPortname);
             gInitialised = true;
             // Flush out any initialisation messages from the modem
             //waitResponse(NULL, DEFAULT_FLUSH_TIMEOUT_SECONDS);
@@ -239,13 +247,13 @@ Nbiot::Nbiot(const char * pPortname)
         else
         {
             delete gpSerialPort;
-            printf ("[modem->Constructor] unable to connect to port %s. \r\n", pPortname);
+            printf ("[modem->Constructor]  unable to connect to port %s. \r\n", pPortname);
         }
     }
 }
 
+
 Nbiot::~Nbiot (){
-	printf ("[modem->Deconstructor]\r\n");
 	delete (gpSerialPort);
 }
 
@@ -254,7 +262,7 @@ Nbiot::~Nbiot (){
 // Connect to the network
 bool Nbiot::connect(bool usingSoftRadio, time_t timeoutSeconds)
 {
-	printf ("[modem->connect]\r\n");
+	//printf ("[modem->connect]\r\n");
     bool success = false;
     AtResponse response;
     time_t startTime = time(NULL);
@@ -263,11 +271,11 @@ bool Nbiot::connect(bool usingSoftRadio, time_t timeoutSeconds)
     {
         if (timeoutSeconds > 0)
         {
-            printf ("[modem->connect] checking for connection to network for up to %d seconds...\r\n", (int) timeoutSeconds);
+            printf ("[modem->connect]  checking for connection to network for up to %d seconds...\r\n", (int) timeoutSeconds);
         }
         else
         {
-            printf ("[modem->connect] checking for connection to network...\r\n");
+            printf ("[modem->connect]  checking for connection to network...\r\n");
         }
 
         do {
@@ -289,7 +297,7 @@ bool Nbiot::connect(bool usingSoftRadio, time_t timeoutSeconds)
             {
                 // It worked, but need to also wait for the "OK"
                 waitResponse();
-                printf ("[modem->connect] Connected to network, setting AT+SMI to 1.\r\n");
+                printf ("[modem->connect]  Connected to network, setting AT+SMI to 1.\r\n");
                 // Set AT+SMI to be 1
                 sendPrintf("AT+SMI=1%s", AT_TERMINATOR);
                 response = waitResponse("+SMI:OK\r\n");
@@ -299,7 +307,7 @@ bool Nbiot::connect(bool usingSoftRadio, time_t timeoutSeconds)
                     waitResponse();
                     // All done
                     success = true;
-                    printf ("[modem->connect] AT+SMI set to 1.\r\n");
+                    printf ("[modem->connect]  AT+SMI set to 1.\r\n");
                 }
                 // Here we could set up AT+NMI to be 2 and receive
                 // datagrams asynchronously based on +NMI notifications
@@ -313,7 +321,6 @@ bool Nbiot::connect(bool usingSoftRadio, time_t timeoutSeconds)
                 // Didn't work, wait before re-trying
                 //sleep((timeoutSeconds * 1000) / 10);
             }
-
             success = true;/// yadet bashe baresh dari  ?????????????????????????????????????????????????????????????????????????????????
         } while ((!success) && ((timeoutSeconds == 0) || (startTime + timeoutSeconds > time(NULL))));
     }
@@ -325,17 +332,20 @@ bool Nbiot::connect(bool usingSoftRadio, time_t timeoutSeconds)
 // Send a message to the network
 bool Nbiot::send (char * pMsg, uint32_t msgSize, time_t timeoutSeconds)
 {
-	printf ("[modem->send]\r\n");
+
+	char *pm = "hello";//pMsg
+	uint32_t size = sizeof(pm);//msgSize
+
     bool success = false;
     AtResponse response;
     uint32_t charCount = 0;
 
     // Check that the incoming message, when hex coded (so * 2) is not too big
-    if ((msgSize * 2) <= sizeof(gHexBuf))
+    if ((size * 2) <= sizeof(gHexBuf))
     {
-        charCount = bytesToHexString (pMsg, msgSize, gHexBuf, sizeof(gHexBuf));
-        printf("[modem->send] sending datagram to network, %d characters: %.*s\r\n", msgSize, (int) msgSize, pMsg);
-        sendPrintf("AT+MGS=%d, %.*s%s", msgSize, charCount, gHexBuf, AT_TERMINATOR);
+        charCount = bytesToHexString (pm, size, gHexBuf, sizeof(gHexBuf));
+        printf("[modem->send]  sending datagram to network, %d characters: %.*s\r\n", (int) size, pm);
+        sendPrintf("AT+MGS=%d, %.*s%s", size, charCount, gHexBuf, AT_TERMINATOR);
 
         // Wait for confirmation
         response = waitResponse("+MGS:OK\r\n");
@@ -343,21 +353,19 @@ bool Nbiot::send (char * pMsg, uint32_t msgSize, time_t timeoutSeconds)
         {
             // It worked, wait for the "OK"
             waitResponse();
-
             // Now wait for the SENT indication
             response = waitResponse("+SMI:SENT\r\n", timeoutSeconds);
-
             if (response == AT_RESPONSE_STARTS_AS_EXPECTED)
             {
                 // All done
                 success = true;
-                printf ("[modem->send] modem reports datagram SENT.\r\n");
+                printf ("[modem->send]  modem reports datagram SENT.\r\n");
             }
         }
     }
     else
     {
-        printf ("[modem->send] datagram is too long (%d characters when only %d bytes can be sent).\r\n", msgSize, (int) (sizeof (gHexBuf) / 2));
+        printf ("[modem->send]  datagram is too long (%d characters when only %d bytes can be sent).\r\n", msgSize, (int) (sizeof (gHexBuf) / 2));
     }
     return success;
 }

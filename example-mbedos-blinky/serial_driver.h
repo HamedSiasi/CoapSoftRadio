@@ -13,14 +13,17 @@
 // Serial port interface
 class SerialPort {
 public:
-    SerialPort(PinName tx=UART1_TX, PinName rx=UART1_RX, int baudrate=9600);
+
+    SerialPort(PinName tx    =  UART1_TX,
+    		   PinName rx    =  UART1_RX,
+			   int baudrate  =  9600);
     ~SerialPort();
 
 #ifdef YOTTA_CFG_MBED_OS
     // mbed OS
     bool connect(const char * pPortName);
 #else
-    bool connect(const TCHAR * pPortName);
+    bool connect(const char * pPortName);
 #endif
 
     // Disconnect from the current serial port.

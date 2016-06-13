@@ -19,13 +19,13 @@
 // Constructor.
 SerialPort::SerialPort(PinName tx/*UART1_TX*/,  PinName rx/*UART1_RX*/,  int baudrate/*9600*/)
 {
-	printf ("[serial->Constructor]\r\n");
+	//printf ("[serial->Constructor]\r\n");
 #ifdef YOTTA_CFG_MBED_OS
 	// mbed OS
     pgUart = new Serial(tx, rx);
 	pgUart->baud(baudrate);
 	pgUart->format(8, SerialBase::None, 1);
-	pgUart->attach(uartCallBack);
+	//pgUart->attach(uartCallBack);
 #else
 	// not mbed OS
 	gSerialPortHandle = INVALID_HANDLE_VALUE;
@@ -37,7 +37,7 @@ SerialPort::SerialPort(PinName tx/*UART1_TX*/,  PinName rx/*UART1_RX*/,  int bau
 // Destructor.
 SerialPort::~SerialPort()
 {
-	printf ("[serial->Destructor]\r\n");
+	//printf ("[serial->Destructor]\r\n");
 #ifdef YOTTA_CFG_MBED_OS
 	// mbed OS
 	delete (pgUart);
@@ -135,9 +135,9 @@ bool SerialPort::connect(const char * pPortName)
             NULL,
             err,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &pMsgBuf, 0, NULL);
-        printf("[serial->connect] Error connecting to serial port '%S': %S. \r\n", pPortName, pMsgBuf);
+        printf("[serial->connect]  Error connecting to serial port '%S': %S. \r\n", pPortName, pMsgBuf);
 #else
-        printf("[serial->connect] Error %d connecting to serial port %s. \r\n", err, pPortName);
+        printf("[serial->connect]  Error %d connecting to serial port %s. \r\n", err, pPortName);
 #endif
     }
 
@@ -163,27 +163,27 @@ bool SerialPort::connect(const char * pPortName)
 // in the case of success.
 bool SerialPort::transmitBuffer(const char *pBuf, uint32_t lenBuf)
 {
-	printf ("[serial->transmitBuffer]\r\n");
+	//printf ("[serial->transmitBuffer]\r\n");
+	unsigned long result = 0;
+
 #ifdef YOTTA_CFG_MBED_OS
 	// mbed OS
-    unsigned long result = 0;
     if(pgUart->writeable())
     {
     	result = pgUart->printf(pBuf);
         if (!result)
         {
-            printf ("[serial->transmitBuffer] Transmit failed !!!\r\n");
+            printf ("[serial->transmitBuffer]  Transmit failed !!! \r\n");
         }
     }
 #else
     // not mbed OS
-    unsigned long result = 0;
     if (gSerialPortHandle != INVALID_HANDLE_VALUE)
     {
         WriteFile(gSerialPortHandle, pBuf, lenBuf, &result, NULL);
         if (!result)
         {
-            printf ("[serial->receiveBuffer] Transmit failed with error code %ld.\r\n", GetLastError());
+            printf ("[serial->receiveBuffer]  Transmit failed with error code %ld.\r\n", GetLastError());
         }
     }
 #endif
@@ -199,7 +199,7 @@ bool SerialPort::transmitBuffer(const char *pBuf, uint32_t lenBuf)
 // returning the number of characters actually read.
 uint32_t SerialPort::receiveBuffer (char *pBuf, uint32_t lenBuf)
 {
-	printf ("[serial->receiveBuffer]\r\n");
+	//printf ("[serial->receiveBuffer]\r\n");
 	unsigned long result = 0;
 
 #ifdef YOTTA_CFG_MBED_OS
@@ -221,7 +221,7 @@ uint32_t SerialPort::receiveBuffer (char *pBuf, uint32_t lenBuf)
         result = ReadFile(gSerialPortHandle, pBuf, lenBuf, &readLength, NULL);
         if (!result)
         {
-            printf ("[serial->receiveBuffer] Receive failed with error code %ld.\r\n", GetLastError());
+            printf ("[serial->receiveBuffer]  Receive failed with error code %ld.\r\n", GetLastError());
         }
     }
 #endif
@@ -243,7 +243,7 @@ uint32_t SerialPort::receiveBuffer (char *pBuf, uint32_t lenBuf)
 // -1 if no character is read.
 int32_t SerialPort::receiveChar()
 {
-	printf ("[serial->receiveChar]\r\n");
+	//printf ("[serial->receiveChar]\r\n");
 	int32_t returnChar = -1;
 
 #ifdef YOTTA_CFG_MBED_OS
@@ -270,7 +270,7 @@ int32_t SerialPort::receiveChar()
         }
         else
         {
-            printf ("[serial->receiveChar] Receive failed with error code %ld.\r\n", GetLastError());
+            printf ("[serial->receiveChar]  Receive failed with error code %ld.\r\n", GetLastError());
         }
     }
 #endif

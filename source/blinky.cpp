@@ -14,211 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//#include <inttypes.h>
+// ---------------------------------------------------
 #include "mbed-drivers/mbed.h"
 #include "nsdl-c/sn_coap_protocol.h"
-
 #include "example-mbedos-blinky/modem_driver.h"
-
 
 // ----------------------------------------------------------------
 // GENERAL COMPILE-TIME CONSTANTS
 // ----------------------------------------------------------------
 
-// Macro to get the number of elements in an array
-#define ARRAY_COUNT(x) (sizeof(x)/sizeof((x)[0]))
-
-// Things to do with the processor
-#define SYSTEM_CONTROL_BLOCK_START_ADDRESS ((uint32_t *) 0xe000ed00)
-#define SYSTEM_RAM_SIZE_BYTES 16384
-
-
 // ----------------------------------------------------------------
 // TYPES
 // ----------------------------------------------------------------
-
-// Tick callback
-typedef void (*TickCallback_t)(uint32_t count);
-
-// Rotator
-typedef char RotatorItem_t[2];
 
 // ----------------------------------------------------------------
 // GLOBAL VARIABLES
 // ----------------------------------------------------------------
 
-// An array that makes a pleasing rotating marker, made up of the marker
-// and then a backspace character to prevent the cursor advancing
-static const RotatorItem_t gRotator[] = {{'/', '\b'}, {'-', '\b'}, {'\\', '\b'}, {'|', '\b'}};
-
-
-// All the rest of the RAM in our littul world.
-// To get the USED_RAM_SIZE, set the size of gRestOfRam to 1, do a build,
-// then run arm-none-eabi-size on the resulting ELF file (which is
-// the one without a file extension), add up the data and bss numbers,
-// add 256 for the IPC block, subtract 4 for the uint32_t you left in the
-// array and that's your answer.
-
-//#define USED_RAM_SIZE 5556
-//static uint32_t gRestOfRam[SYSTEM_RAM_SIZE_BYTES / sizeof (uint32_t) - (USED_RAM_SIZE / sizeof (uint32_t))];
-static uint32_t gRestOfRam[1];
 static coap_s *coap_handle = NULL;
-
-
-// GPIO to toggle
-static DigitalOut gGpio(LED1);
-
-// Flipper to test uS delays
-static Ticker gFlipper;
-
-// Hook to let me read stdin
-static Serial& gSerial = get_stdio_serial();
 
 static uint8_t*  gMsgPacket;
 static uint32_t  gMsgPacketSize;
-//static Nbiot *pModem;
 
 // ----------------------------------------------------------------
 // FUNCTION PROTOTYPES
 // ----------------------------------------------------------------
 
-static void checkCpu(void);
-static uint32_t *checkRam(void);
-static void blinky(void);
-static void flip(void);
-static void serialRxCallback(void);
-
-//static void msgTest(void);
-//static bool modem(uint8_t *datagram, uint32_t datagramLen);
-//static bool msgCoAP(uint8_t *msgPayload, uint16_t msgPayloadSize, sn_coap_msg_type_e  msgType, sn_coap_msg_code_e  msgCode);
-
 // ----------------------------------------------------------------
 // STATIC FUNCTIONS
 // ----------------------------------------------------------------
 
-static void checkCpu()
-{
-    uint32_t x = 0x01234567;
-
-    printf("\n*** Printing stuff of interest about the CPU.\r\n");
-    if ((*(uint8_t *) &x) == 0x67)
-    {
-        printf("Little endian.\r\n");
-    }
-    else
-    {
-        printf("Big endian.\r\n");
-    }
-
-    // Read the system control block
-    // CPU ID register
-    printf("[checkCpu] CPUID: 0x%08lx.\r\n", *(SYSTEM_CONTROL_BLOCK_START_ADDRESS));
-    // Interrupt control and state register
-    printf("[checkCpu] ICSR: 0x%08lx.\r\n", *(SYSTEM_CONTROL_BLOCK_START_ADDRESS + 1));
-    // VTOR is not there, skip it
-    // Application interrupt and reset control register
-    printf("[checkCpu] AIRCR: 0x%08lx.\r\n", *(SYSTEM_CONTROL_BLOCK_START_ADDRESS + 3));
-    // SCR is not there, skip it
-    // Configuration and control register
-    printf("[checkCpu] CCR: 0x%08lx.\r\n", *(SYSTEM_CONTROL_BLOCK_START_ADDRESS + 5));
-    // System handler priority register 2
-    printf("[checkCpu] SHPR2: 0x%08lx.\r\n", *(SYSTEM_CONTROL_BLOCK_START_ADDRESS + 6));
-    // System handler priority register 3
-    printf("[checkCpu] SHPR3: 0x%08lx.\r\n", *(SYSTEM_CONTROL_BLOCK_START_ADDRESS + 7));
-    // System handler control and status register
-    printf("[checkCpu] SHCSR: 0x%08lx.\r\n", *(SYSTEM_CONTROL_BLOCK_START_ADDRESS + 8));
-
-    printf("[checkCpu] Last stack entry was at 0x%08lx.\r\n", (uint32_t) &x);
-    printf("[checkCpu] A static variable is at 0x%08lx.\r\n", (uint32_t) &gRotator);
-}
-
-
-static uint32_t * checkRam(void)
-{
-    uint32_t * pLocation = NULL;
-    uint32_t value;
-
-    // Write a walking 1 pattern
-    value = 1;
-    pLocation = &(gRestOfRam[0]);
-    for (pLocation = &(gRestOfRam[0]); pLocation < &(gRestOfRam[0]) + ARRAY_COUNT(gRestOfRam); pLocation++)
-    {
-        *pLocation = value;
-        value <<= 1;
-        if (value == 0)
-        {
-            value = 1;
-        }
-    }
-
-    // Read the walking 1 pattern
-    value = 1;
-    for (pLocation = &(gRestOfRam[0]); (pLocation < &(gRestOfRam[0]) + ARRAY_COUNT(gRestOfRam)) && (*pLocation == value); pLocation++)
-    {
-        value <<= 1;
-        if (value == 0)
-        {
-            value = 1;
-        }
-    }
-
-    if (pLocation >= &(gRestOfRam[0]) + ARRAY_COUNT(gRestOfRam))
-    {
-        // Write an inverted walking 1 pattern
-        value = 1;
-        for (pLocation = &(gRestOfRam[0]); (pLocation < &(gRestOfRam[0]) + ARRAY_COUNT(gRestOfRam)); pLocation++)
-        {
-            *pLocation = ~value;
-            value <<= 1;
-            if (value == 0)
-            {
-                value = 1;
-            }
-        }
-
-        // Read the inverted walking 1 pattern
-        value = 1;
-        for (pLocation = &(gRestOfRam[0]); (pLocation < &(gRestOfRam[0]) + ARRAY_COUNT(gRestOfRam)) && (*pLocation == ~value); pLocation++)
-        {
-            value <<= 1;
-            if (value == 0)
-            {
-                value = 1;
-            }
-        }
-    }
-
-    if (pLocation >= &(gRestOfRam[0]) + ARRAY_COUNT(gRestOfRam))
-    {
-        pLocation = NULL;
-    }
-
-    return pLocation;
-}
-
-static void blinky(void)
-{
-    static uint8_t rotatorIndex = 0;
-
-    gGpio = !gGpio;
-
-    printf("%.*s", sizeof (gRotator[rotatorIndex]), gRotator[rotatorIndex]);
-    rotatorIndex++;
-    if (rotatorIndex >= ARRAY_COUNT(gRotator))
-    {
-        rotatorIndex = 0;
-    }
-}
-
-static void flip()
-{
-    gGpio = !gGpio;
-}
-
-static void serialRxCallback()
-{
-    gSerial.putc(gSerial.getc());
-}
 
 static void* myMalloc(uint16_t size)
 {
@@ -234,19 +59,19 @@ static void myFree(void* addr)
 
 static uint8_t tx_callback(uint8_t *a, uint16_t b, sn_nsdl_addr_s *c, void *d)
 {
-	//printf("[blinky->tx_callback]\r\n");
+	printf("[blinky->tx_callback]\r\n");
     return 0;
 }
 
 static int8_t rx_callback(sn_coap_hdr_s *a, sn_nsdl_addr_s *b, void *c)
 {
-	//printf("[blinky->rx_callback]\r\n");
+	printf("[blinky->rx_callback]\r\n");
 	return 0;
 }
 
 
 static bool modem(uint8_t *datagram, uint32_t datagramLen){
-	//printf ("[blinky->modem]\r\n");
+	printf ("[blinky->modem]\r\n");
 
 	bool status = false;
 	bool usingSoftRadio = true; //false;
@@ -254,38 +79,39 @@ static bool modem(uint8_t *datagram, uint32_t datagramLen){
 	Nbiot *pModem ;
 	if( !(pModem = new Nbiot()) )
 	{
-		printf ("[blinky->modem] Out of Memory. \r\n");
+		printf ("[blinky->modem]  Out of Memory. \r\n");
 	}
 	else
 	{
-		printf ("[blinky->modem] Initialising module... \r\n");
+		printf ("[blinky->modem]  Initialising module... \r\n");
 		status = pModem->connect(usingSoftRadio);
 		if (status)
 		{
-			printf ("[blinky->modem] Sending initial datagram \"%*s\".\r\n", datagramLen, datagram);
-			status = pModem->send ( (char*)datagram, datagramLen);
+			//printf ("[blinky->modem] Sending initial datagram \"%*s\".\r\n", datagramLen, datagram);
+			//status = pModem->send ( (char*)datagram, datagramLen);
+			status = pModem->send ( "hello", 1);
 			if(status)
 			{
-				printf ("[blinky->modem] OK.\r\n");
+				printf ("[blinky->modem]  OK.\r\n");
 				// Receive a message from the network
 				datagramLen = pModem->receive ( (char*)datagram, datagramLen);
 				if (datagramLen > 0)
 				{
-					printf ("[blinky->modem] Datagam received from network: \"%.*s\".\r\n", datagramLen, datagram);
+					printf ("[blinky->modem]  Datagam received from network: \"%.*s\".\r\n", datagramLen, datagram);
 				}
 			}
 			else
 			{
-				printf ("[blinky->modem] Failed to send datagram.\r\n");
+				printf ("[blinky->modem]  Failed to send datagram.\r\n");
 			}
 		}
 		else
 		{
-			printf ("[blinky->modem] Failed to connect to the network. \r\n");
+			printf ("[blinky->modem]  Failed to connect to the network. \r\n");
 		}
 	}
 	delete (pModem);
-	printf ("[blinky->modem] Exitting ...\r\n\n\n");
+	printf ("[blinky->modem]  Exitting ...\r\n\n\n\n");
 	return status;
 }
 
@@ -297,7 +123,7 @@ static bool msgCoAP(
 		sn_coap_msg_type_e  msgType,
 		sn_coap_msg_code_e  msgCode)
 {
-	//printf("[blinky->msgCoAP]\r\n");
+	printf("[blinky->msgCoAP]\r\n");
 	bool status = false;
 
 	/* This function sets the memory allocation and must be called first. */
@@ -414,17 +240,12 @@ static bool msgCoAP(
 
 static void msgTest(void)
 {
-	//printf ("[blinky->msgTest]\r\n");
-	uint8_t msg =0;
-    if(msgCoAP(msg, 1, COAP_MSG_TYPE_CONFIRMABLE, COAP_MSG_CODE_EMPTY))
+	uint8_t msg =7;
+    if(msgCoAP(msg, 1, COAP_MSG_TYPE_CONFIRMABLE, COAP_MSG_CODE_REQUEST_POST))
     {
     	if(!modem(gMsgPacket, gMsgPacketSize))
     	{
     		// try again?
-    	}
-    	else
-    	{
-    		printf("[blinky->msgTest] all done :) \r\n");
     	}
     }
 }
@@ -437,29 +258,6 @@ static void msgTest(void)
 void app_start(int, char**)
 {
 	//printf ("[app_start]\r\n");
-    //uint32_t * pRamResult;
-    //checkCpu();
-    //printf("[app_start] *** Setting up serial echo.\r\n");
-    //gSerial.attach (&serialRxCallback);
-
-    //printf("[app_start] *** Checking RAM.\r\n");
-    /*
-    pRamResult = checkRam();
-    if (pRamResult != NULL)
-    {
-        printf("[app_start] !!! RAM check failure at location 0x%08lx (contents 0x%08lx).\r\n", (uint32_t) pRamResult, *pRamResult);
-        while(1) {};
-    }*/
-
-    //printf("[app_start] *** Running us_ticker for 2 seconds...\r\n");
-    //gFlipper.attach_us(&flip, 100);
-    //wait(2);
-    //gFlipper.attach_us(NULL, 0);
-
-
-
-    //printf("[app_start] *** Handing over to minar, which will check lp_ticker and sleep.\r\n");
-    //minar::Scheduler::postCallback(blinky).period(minar::milliseconds(1000));
     minar::Scheduler::postCallback(msgTest).period(minar::milliseconds(5000));
 }
 

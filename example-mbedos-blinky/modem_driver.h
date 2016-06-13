@@ -51,7 +51,7 @@ public:
     // would be:
     //
     // "\\\\.\\COM17"    
-    Nbiot (const char * pPortname = "UART1");
+    Nbiot (const char * pPortname = "\\\\.\\COM10");
     ~Nbiot ();
 
 
