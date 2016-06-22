@@ -10,22 +10,22 @@
 // ----------------------------------------------------------------
 
 // 	Maximum length of a string to be sent with the send() function
-#define MAX_LEN_SEND_STRING 8//130
+#define MAX_LEN_SEND_STRING 64
 
 // 	The default interrupt buffer for received data
-#define DEFAULT_RX_INT_STORAGE 8//130
+#define DEFAULT_RX_INT_STORAGE 64
 
 // 	Default timeout when connecting to the network
-#define DEFAULT_CONNECT_TIMEOUT_SECONDS 1
+#define DEFAULT_CONNECT_TIMEOUT_SECONDS 5
 
 // 	Default timeout when sending a message to the network
-#define DEFAULT_SEND_TIMEOUT_SECONDS 1
+#define DEFAULT_SEND_TIMEOUT_SECONDS 5
 
 // 	Default timeout when receiving a message from the network
-#define DEFAULT_RECEIVE_TIMEOUT_SECONDS 1
+#define DEFAULT_RECEIVE_TIMEOUT_SECONDS 5
 
 // 	Default timeout when waiting for a response from the CIoT modem
-#define DEFAULT_RESPONSE_TIMEOUT_SECONDS 1
+#define DEFAULT_RESPONSE_TIMEOUT_SECONDS 5
 
 // 	Default timeout when flushing the modem at the outset
 #define DEFAULT_FLUSH_TIMEOUT_SECONDS 1
@@ -162,7 +162,7 @@ protected:
     // are discarded.
     AtResponse waitResponse (
     		const char  *pExpected       = NULL,
-    		time_t       timeoutSeconds  = 0 /*DEFAULT_RESPONSE_TIMEOUT_SECONDS*/,
+    		time_t       timeoutSeconds  = DEFAULT_RESPONSE_TIMEOUT_SECONDS,
             char        *pResponseBuf    = NULL,
 			uint32_t     responseBufLen  = 0);
 

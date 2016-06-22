@@ -163,7 +163,6 @@ bool SerialPort::connect(const char * pPortName)
 // in the case of success.
 bool SerialPort::transmitBuffer(const char *pBuf, uint32_t lenBuf)
 {
-	//printf ("[serial->transmitBuffer]\r\n");
 	unsigned long result = 0;
 
 #ifdef YOTTA_CFG_MBED_OS
@@ -171,6 +170,7 @@ bool SerialPort::transmitBuffer(const char *pBuf, uint32_t lenBuf)
     if(pgUart->writeable())
     {
     	result = pgUart->printf(pBuf);
+    	//result = pgUart->printf("AT\r\n");
         if (!result)
         {
             printf ("[serial->transmitBuffer]  Transmit failed !!! \r\n");
@@ -243,14 +243,14 @@ uint32_t SerialPort::receiveBuffer (char *pBuf, uint32_t lenBuf)
 // -1 if no character is read.
 int32_t SerialPort::receiveChar()
 {
-	//printf ("[serial->receiveChar]\r\n");
 	int32_t returnChar = -1;
 
 #ifdef YOTTA_CFG_MBED_OS
 	// mbed OS
-    if(pgUart->readable())
+	if( pgUart->readable() )
     {
     	returnChar = (int32_t) pgUart->getc();
+    	//printf("%c \r\n", returnChar);
     }
 #else
     // not mbed OS
@@ -275,7 +275,7 @@ int32_t SerialPort::receiveChar()
     }
 #endif
 
-    return returnChar;
+    return (int32_t)returnChar;
 }
 //END FILE
 
