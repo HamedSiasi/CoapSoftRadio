@@ -19,6 +19,7 @@
 #include "nsdl-c/sn_coap_protocol.h"
 #include "example-mbedos-blinky/modem_driver.h"
 
+
 // ----------------------------------------------------------------
 // GENERAL COMPILE-TIME CONSTANTS
 // ----------------------------------------------------------------
